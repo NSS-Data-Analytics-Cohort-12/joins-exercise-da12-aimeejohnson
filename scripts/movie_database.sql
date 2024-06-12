@@ -23,7 +23,7 @@ LIMIT 1;
 SELECT film_title,company_name,worldwide_gross
 FROM specs
 INNER JOIN distributors
-	ON distributors.distributor_id = specs.domestic_distributor_id	
+	ON specs.domestic_distributor_id = distributors.distributor_id	
 INNER JOIN revenue
 	ON specs.movie_id = revenue.movie_id
 WHERE mpaa_rating = 'G'
@@ -43,7 +43,7 @@ GROUP BY company_name
 ORDER BY total_films DESC;
 
 -- 5. Write a query that returns the five distributors with the highest average movie budget.
-SELECT company_name, AVG(film_budget) AS average_budget
+SELECT company_name, AVG(film_budget)::MONEY AS average_budget
 FROM distributors
 INNER JOIN specs
 	ON distributors.distributor_id = specs.domestic_distributor_id
@@ -63,7 +63,7 @@ LIMIT 5;
 SELECT company_name,film_title,imdb_rating,headquarters
 FROM specs
 INNER JOIN distributors
-	ON distributors.distributor_id = specs.domestic_distributor_id	
+	ON specs.domestic_distributor_id = distributors.distributor_id
 INNER JOIN rating
 	ON specs.movie_id = rating.movie_id
 WHERE headquarters NOT LIKE '%CA'
@@ -73,7 +73,7 @@ ORDER BY imdb_rating DESC;
 -- 2 movies, "Dirty Dancing"
 
 -- 7. Which have a higher average rating, movies which are over two hours long or movies which are under two hours?
-SELECT (length_in_min/60.0) AS length_in_hours, AVG(imdb_rating) AS average_rating
+SELECT ROUND((length_in_min/60.0),4) AS length_in_hours, AVG(imdb_rating) AS average_rating
 FROM specs
 INNER JOIN rating 
 ON specs.movie_id = rating.movie_id
@@ -81,3 +81,19 @@ GROUP BY length_in_hours
 ORDER BY average_rating DESC;
 
 --Movies over two hours
+
+-- Walkthrough additional way to do it:
+
+SELECT 'Over 2 hours' AS movie_length, AVG(rating.imdb_rating) AS avg_rating
+FROM rating 
+JOIN specs 
+USING(movie_id)
+WHERE specs.length_in_min >= 120
+
+UNION 
+
+SELECT 'Under 2 hours' AS movie_length, AVG(rating.imdb_rating) AS avg_rating
+FROM rating 
+JOIN specs 
+USING(movie_id)
+WHERE specs.length_in_min < 120;
